@@ -1,5 +1,8 @@
 package com.example.demo_user.entity;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -9,15 +12,26 @@ import lombok.ToString;
 @NoArgsConstructor
 @Setter
 @ToString
+@Builder
+@AllArgsConstructor
 public class Book {
-  public static int counter = 0;
+  @JsonProperty("bookID")
   private int bookID;
+  @JsonProperty("bookName")
   private String bookName;
+  @JsonProperty("author")
   private String author;
 
-  public Book(String bookName,String author) {
-    this.bookID = ++counter;
+  public Book(String bookName, String author) {
     this.bookName = bookName;
-    this.author=author;
+    this.author = author;
+  }
+
+  public int getBookID() {
+    return bookID;
+  }
+
+  public void setBookID(int bookID) {
+    this.bookID = bookID;
   }
 }

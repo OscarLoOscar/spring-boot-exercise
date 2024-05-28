@@ -2,9 +2,14 @@ package com.example.demo_user.controller.impl;
 
 import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
 import com.example.demo_user.controller.BookOperation;
 import com.example.demo_user.entity.Book;
+import com.example.demo_user.exceptions.SysCode;
+import com.example.demo_user.exceptions.book.BookExistException;
+import com.example.demo_user.exceptions.book.BookNotFoundException;
 import com.example.demo_user.model.request.BookRequest;
 import com.example.demo_user.service.BookService;
 
@@ -19,8 +24,9 @@ public class BookController implements BookOperation {
     if (bookService.getBookByBookname(bookname).isPresent())
       return bookService.getBookByBookname(bookname).get();
     else
-      return bookService.getBookByBookname(bookname)
-          .orElseThrow(() -> new RuntimeException("book is not exist"));
+      return bookService.getBookByBookname(bookname).orElseThrow(
+          () -> new BookNotFoundException(SysCode.BOOK_NOT_FOUND.getCode(),
+              SysCode.BOOK_NOT_FOUND.getMessage()));
   }
 
   @Override
@@ -34,12 +40,13 @@ public class BookController implements BookOperation {
   }
 
   @Override
-  public List<Book> getBookByAuthor(String arthur) {
-    if (bookService.getBookByAuthor(arthur).isPresent())
-      return bookService.getBookByAuthor(arthur).get();
+  public List<Book> getBookByAuthor(String authorname) {
+    if (bookService.getBookByAuthor(authorname).isPresent())
+      return bookService.getBookByAuthor(authorname).get();
     else
-      return bookService.getBookByAuthor(arthur)
-          .orElseThrow(() -> new RuntimeException("book is not exist"));
+      return bookService.getBookByAuthor(authorname).orElseThrow(
+          () -> new BookExistException(SysCode.INVALID_AUTHOR.getCode(),
+              SysCode.INVALID_AUTHOR.getMessage()));
   }
 
 }

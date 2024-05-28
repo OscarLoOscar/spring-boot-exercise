@@ -10,6 +10,7 @@ import com.example.demo_user.entity.Book;
 public class BookRepository {
 
   private static List<Book> books = new ArrayList<>();
+  private static int idCounter = 1;
 
   public Optional<Book> getBookByBookname(String bookName) {
     return books.stream()//
@@ -27,8 +28,8 @@ public class BookRepository {
     return books;
   }
 
-  public Book addBook(String bookName,String author) {
-    Book book = new Book(bookName,author);
+  public Book addBook(Book book) {
+    book.setBookID(idCounter++);
     books.add(book);
     return book;
   }

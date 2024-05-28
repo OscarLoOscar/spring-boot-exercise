@@ -58,7 +58,8 @@ public class BookServiceImplTest {
   public void testAddBook() {
     BookRequest bookRequest = new BookRequest("Book1", "Author1");
     Book book = new Book(bookRequest.getBookName(), bookRequest.getAuthor());
-    when(bookRepository.addBook(bookRequest.getBookName(), bookRequest.getAuthor())).thenReturn(book);
+    book.setBookID(1);
+    when(bookRepository.addBook(book)).thenReturn(book);
 
     Book result = bookService.addBook(bookRequest);
 

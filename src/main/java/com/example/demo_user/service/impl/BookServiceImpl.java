@@ -30,7 +30,8 @@ public class BookServiceImpl implements BookService {
 
   @Override
   public Book addBook(BookRequest bookRequest) {
-    return bookRepository.addBook(bookRequest.getBookName(), bookRequest.getAuthor());
+    Book book  = new Book(bookRequest.getBookName(), bookRequest.getAuthor());
+    return bookRepository.addBook(book);
   }
 
 
