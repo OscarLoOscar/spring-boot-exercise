@@ -18,11 +18,20 @@ public class UserRepository {
   }
 
   public User addUser(String name, String email) throws UserExistException {
-    users.stream().filter(e -> e.getName().equals(name)).findFirst()
-        .orElseThrow(() -> new UserExistException(name, email));
+    users.stream()
+        .filter(e -> e.getEmail().equals(email) || e.getName().equals(name))//
+        .findFirst()//
+        .ifPresent(user -> {
+          throw new UserExistException(name, email);
+        });
+
     User user = new User(name, email);
     users.add(user);
     return user;
+  }
+
+  public List<User> getUserList() {
+    return users;
   }
 
 }
