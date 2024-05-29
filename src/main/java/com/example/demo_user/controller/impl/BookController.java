@@ -2,8 +2,6 @@ package com.example.demo_user.controller.impl;
 
 import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
 import com.example.demo_user.controller.BookOperation;
 import com.example.demo_user.entity.Book;
@@ -45,7 +43,7 @@ public class BookController implements BookOperation {
       return bookService.getBookByAuthor(authorname).get();
     else
       return bookService.getBookByAuthor(authorname).orElseThrow(
-          () -> new BookExistException(SysCode.INVALID_AUTHOR.getCode(),
+          () -> new BookNotFoundException(SysCode.INVALID_AUTHOR.getCode(),
               SysCode.INVALID_AUTHOR.getMessage()));
   }
 

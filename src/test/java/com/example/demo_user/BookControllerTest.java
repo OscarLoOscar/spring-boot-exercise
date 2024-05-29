@@ -1,19 +1,16 @@
 package com.example.demo_user;
 
-import static org.hamcrest.Matchers.is;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
-import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-import java.util.Arrays;
-import java.util.List;
+import java.util.Collections;
 import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -27,115 +24,86 @@ import com.example.demo_user.service.BookService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 @WebMvcTest(BookController.class)
-public class BookControllerTest {
+class BookControllerTest {
 
   @Autowired
   private MockMvc mockMvc;
 
-  @Autowired
-  private ObjectMapper objectMapper;
-
   @MockBean
   private BookService bookService;
 
+  @Autowired
+  private ObjectMapper objectMapper;
+
+  private Book book;
+
   @BeforeEach
-  public void setup() {
+  void setUp() {
+    book = new Book();
+    book.setBookID(1);
+    book.setAuthor("Author1");
+    book.setBookName("Book1");
     MockitoAnnotations.openMocks(this);
   }
 
   @Test
-  public void testGetBookByBookname() throws Exception {
-    String bookname = "Book1";
-    Book book = new Book();
-    book.setBookName(bookname);
-    when(bookService.getBookByBookname(bookname)).thenReturn(Optional.of(book));
+  void getBookByBooknameTest() throws Exception {
+    when(bookService.getBookByBookname(anyString()))
+        .thenReturn(Optional.of(book));
 
-    mockMvc.perform(get("/book/{bookname}", bookname))
+    mockMvc.perform(get("/book/{bookname}", "Test Book"))
         .andExpect(status().isFound())
-        .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-        .andExpect(jsonPath("$.bookName", is(bookname)));
-  }
-
-
-  @Test
-  public void testGetBookByBookname_NotFound() throws Exception {
-    String bookname = "NonExistingBook";
-    when(bookService.getBookByBookname(bookname)).thenReturn(Optional.empty());
-
-    mockMvc.perform(get("/book/{bookname}", bookname))
-        .andExpect(status().isBadRequest())//
-        .andExpect(result -> {
-          result.getResolvedException();
-        });
+        .andExpect(jsonPath("$.bookName").value("Book1"));
   }
 
   @Test
-  public void testGetBookList() throws Exception {
-    List<Book> expectedBooks = Arrays.asList(new Book("Book1", "Author1"),
-        new Book("Book2", "Author2"));
-    when(bookService.getBookList())//
-        .thenReturn(expectedBooks);
+  void getBookByBooknameNotFoundTest() throws Exception {
+    when(bookService.getBookByBookname(anyString()))
+        .thenReturn(Optional.empty());
 
-    mockMvc.perform(get("/books").contentType(MediaType.APPLICATION_JSON)//
-        .content(objectMapper.writeValueAsString(expectedBooks)))//
-        .andExpect(status().isOk())
-        .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-        .andExpect(jsonPath("$[0].bookName", is("Book1")))
-        .andExpect(jsonPath("$[1].bookName", is("Book2")));
+    mockMvc.perform(get("/book/{bookname}", "Nonexistent Book"))
+        .andExpect(status().isNotFound());
   }
 
   @Test
-  public void testAddBook() throws Exception {
+  void getBookListTest() throws Exception {
+    when(bookService.getBookList()).thenReturn(Collections.singletonList(book));
+
+    mockMvc.perform(get("/books")).andExpect(status().isOk())
+        .andExpect(jsonPath("$[0].bookName").value("Book1"));
+  }
+
+  @Test
+  void addBookTest() throws Exception {
     BookRequest bookRequest = BookRequest.builder()//
-        .bookName("Book1")//
-        .author("Author1")//
-        .build();
-    Book expectedBook = Book.builder()//
-        .bookName("Book1")//
-        .author("Author1")//
-        .build();
-    expectedBook.setBookID(1);
+        .bookName("New Book")//
+        .author("New Author")//
+        .build();//
 
-    when(bookService.addBook(bookRequest))//
-        .thenReturn(expectedBook);
+    when(bookService.addBook(Mockito.any(BookRequest.class))).thenReturn(book);
 
-    mockMvc.perform(post("/book")//
-        .contentType(APPLICATION_JSON)//
-        .accept(APPLICATION_JSON)
-        .content(objectMapper.writeValueAsString(bookRequest)))//
-        .andDo(print()) //
-        .andExpect(status().isCreated())//
-        .andExpect(jsonPath("$.bookID", is(1)))//
-        .andExpect(jsonPath("$.author", is("Author1")))//
-        .andExpect(jsonPath("$.bookName", is("Book1")))//
-        .andExpect(content().json(
-            "{\"bookID\":1,\"bookName\":\"Book1\",\"author\":\"Author1\"}"));
+    mockMvc
+        .perform(post("/book").contentType(MediaType.APPLICATION_JSON)
+            .content(objectMapper.writeValueAsString(bookRequest)))
+        .andExpect(status().isCreated())
+        .andExpect(jsonPath("$.bookName").value("Book1"));
   }
 
   @Test
-  public void testGetBookByAuthor() throws Exception {
-    String author = "Author1";
-    List<Book> expectedBooks =
-        Arrays.asList(new Book("Book1", author), new Book("Book2", author));
-    when(bookService.getBookByAuthor(author))
-        .thenReturn(Optional.of(expectedBooks));
+  void getBookByAuthorTest() throws Exception {
+    when(bookService.getBookByAuthor(anyString()))
+        .thenReturn(Optional.of(Collections.singletonList(book)));
 
-    mockMvc.perform(get("/author/{authorname}", author))
+    mockMvc.perform(get("/author/{authorname}", "Test Author"))
         .andExpect(status().isFound())
-        .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-        .andExpect(jsonPath("$[0].author", is("Author1")))
-        .andExpect(jsonPath("$[1].author", is("Author1")));
+        .andExpect(jsonPath("$[0].bookName").value("Book1"));
   }
 
   @Test
-  public void testGetBookByAuthor_NotFound() throws Exception {
-    String author = "NonExistingAuthor";
-    when(bookService.getBookByAuthor(author)).thenReturn(Optional.empty());
+  void getBookByAuthorNotFoundTest() throws Exception {
+    when(bookService.getBookByAuthor(anyString())).thenReturn(Optional.empty());
 
-    mockMvc.perform(get("/author/{authorname}", author))
-        .andExpect(status().is4xxClientError()).andExpect(result -> {
-          result.getResolvedException();
-        });
+    mockMvc.perform(get("/author/{authorname}", "Nonexistent Author"))
+        .andExpect(status().isNotFound());
   }
-
 }

@@ -1,82 +1,87 @@
 package com.example.demo_user;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.Mockito.when;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
 import com.example.demo_user.entity.Book;
 import com.example.demo_user.model.request.BookRequest;
-import com.example.demo_user.repository.BookRepository;
-import com.example.demo_user.service.impl.BookServiceImpl;
+import com.example.demo_user.service.BookService;
 
+@SpringBootTest
 public class BookServiceImplTest {
 
-  @InjectMocks
-  private BookServiceImpl bookService;
+  @Autowired
+  private BookService bookService;
 
-  @Mock
-  private BookRepository bookRepository;
-  
   @BeforeEach
-  public void setup() {
-    MockitoAnnotations.openMocks(this);
-  }
-
-
-  @Test
-  public void testGetBookByBookname() {
-    String bookName = "Book1";
-    Book book = new Book(bookName, "Author1");
-    when(bookRepository.getBookByBookname(bookName)).thenReturn(Optional.of(book));
-
-    Optional<Book> result = bookService.getBookByBookname(bookName);
-
-    assertTrue(result.isPresent());
-    assertEquals(book, result.get());
+  void setUp() {
+    // 清理存儲庫中的所有書籍，以確保測試之間不會相互干擾
+    bookService.getBookList().clear();
   }
 
   @Test
-  public void testGetBookList() {
-    List<Book> books = new ArrayList<>();
-    books.add(new Book("Book1", "Author1"));
-    books.add(new Book("Book2", "Author2"));
-    when(bookRepository.getBookList()).thenReturn(books);
+  void testAddBook() {
+    BookRequest bookRequest = new BookRequest();
+    bookRequest.setBookName("Test Book");
+    bookRequest.setAuthor("Test Author");
 
-    List<Book> result = bookService.getBookList();
+    Book book = bookService.addBook(bookRequest);
 
-    assertEquals(books, result);
+    assertNotNull(book);
+    assertEquals("Test Book", book.getBookName());
+    assertEquals("Test Author", book.getAuthor());
   }
 
   @Test
-  public void testAddBook() {
-    BookRequest bookRequest = new BookRequest("Book1", "Author1");
-    Book book = new Book(bookRequest.getBookName(), bookRequest.getAuthor());
-    book.setBookID(1);
-    when(bookRepository.addBook(book)).thenReturn(book);
+  void testGetBookByBookname() {
+    BookRequest bookRequest = new BookRequest();
+    bookRequest.setBookName("Test Book");
+    bookRequest.setAuthor("Test Author");
+    bookService.addBook(bookRequest);
 
-    Book result = bookService.addBook(bookRequest);
+    Optional<Book> book = bookService.getBookByBookname("Test Book");
 
-    assertEquals(book, result);
+    assertTrue(book.isPresent());
+    assertEquals("Test Book", book.get().getBookName());
+    assertEquals("Test Author", book.get().getAuthor());
   }
 
   @Test
-  public void testGetBookByAuthor() {
-    String author = "Author1";
-    List<Book> books = new ArrayList<>();
-    books.add(new Book("Book1", author));
-    books.add(new Book("Book2", author));
-    when(bookRepository.getBookByAuthor(author)).thenReturn(Optional.of(books));
+  void testGetBookList() {
+    BookRequest bookRequest1 = new BookRequest();
+    bookRequest1.setBookName("Test Book 1");
+    bookRequest1.setAuthor("Test Author 1");
 
-    Optional<List<Book>> result = bookService.getBookByAuthor(author);
+    BookRequest bookRequest2 = new BookRequest();
+    bookRequest2.setBookName("Test Book 2");
+    bookRequest2.setAuthor("Test Author 2");
 
-    assertTrue(result.isPresent());
-    assertEquals(books, result.get());
+    bookService.addBook(bookRequest1);
+    bookService.addBook(bookRequest2);
+
+    List<Book> bookList = bookService.getBookList();
+
+    assertEquals(2, bookList.size());
+  }
+
+  @Test
+  void testGetBookByAuthor() {
+    BookRequest bookRequest = new BookRequest();
+    bookRequest.setBookName("Test Book");
+    bookRequest.setAuthor("Test Author");
+    bookService.addBook(bookRequest);
+
+    Optional<List<Book>> booksByAuthor =
+        bookService.getBookByAuthor("Test Author");
+
+    assertTrue(booksByAuthor.isPresent());
+    assertEquals(1, booksByAuthor.get().size());
+    assertEquals("Test Author", booksByAuthor.get().get(0).getAuthor());
   }
 }

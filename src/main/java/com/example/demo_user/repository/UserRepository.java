@@ -5,7 +5,6 @@ import java.util.List;
 import java.util.Optional;
 import org.springframework.stereotype.Component;
 import com.example.demo_user.entity.User;
-import com.example.demo_user.exceptions.book.BookExistException;
 import com.example.demo_user.exceptions.user.UserExistException;
 
 @Component
