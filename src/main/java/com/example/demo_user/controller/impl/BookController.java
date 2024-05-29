@@ -6,7 +6,6 @@ import org.springframework.web.bind.annotation.RestController;
 import com.example.demo_user.controller.BookOperation;
 import com.example.demo_user.entity.Book;
 import com.example.demo_user.exceptions.SysCode;
-import com.example.demo_user.exceptions.book.BookExistException;
 import com.example.demo_user.exceptions.book.BookNotFoundException;
 import com.example.demo_user.model.request.BookRequest;
 import com.example.demo_user.service.BookService;

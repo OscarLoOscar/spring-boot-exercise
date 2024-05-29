@@ -10,7 +10,7 @@ import com.example.demo_user.model.request.UserRequest;
 import com.example.demo_user.service.UserService;
 
 @RestController
-public class UserControler implements UserOperation {
+public class UserController implements UserOperation {
 
   @Autowired
   private UserService userService;

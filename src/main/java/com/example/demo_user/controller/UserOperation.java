@@ -12,7 +12,7 @@ import com.example.demo_user.model.request.UserRequest;
 public interface UserOperation {
 
   @GetMapping("/user/username/{name}")
-  @ResponseStatus(HttpStatus.OK)
+  @ResponseStatus(HttpStatus.FOUND)
   public User getUser(@PathVariable String name);
 
   @PostMapping("/add/user")

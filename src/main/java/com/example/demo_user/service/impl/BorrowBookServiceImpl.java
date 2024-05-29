@@ -17,7 +17,7 @@ import com.example.demo_user.service.UserService;
 @Service
 public class BorrowBookServiceImpl implements BorrowBookService {
   private static Map<User, List<Book>> booksRecords = new HashMap<>();
-  
+
   @Autowired
   private BookService bookService;
 
@@ -58,7 +58,7 @@ public class BorrowBookServiceImpl implements BorrowBookService {
   public UserDTO getRecord(String name) {
     User user = userService.getUser(name).get();
     return UserDTO.builder()//
-        .userID(user.getId())//
+        .userID(user.getUserID())//
         .userName(user.getName())//
         .records(booksRecords.get(userService.getUser(name).get()))//
         .build();
@@ -69,7 +69,7 @@ public class BorrowBookServiceImpl implements BorrowBookService {
   public List<UserDTO> getAllRecord() {
     return booksRecords.entrySet().stream()//
         .map(entry -> UserDTO.builder()//
-            .userID(entry.getKey().getId())//
+            .userID(entry.getKey().getUserID())//
             .userName(entry.getKey().getName())//
             .records(entry.getValue())//
             .build())//
